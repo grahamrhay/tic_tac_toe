@@ -2,3 +2,5 @@
 ebin/
 _rel/
 *.swp
+deps/
+.erlang.mk.packages.v2

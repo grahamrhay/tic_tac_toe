@@ -1,0 +1,20 @@
+<html>
+    <head>
+        <title>Tic Tac Toe</title>
+    </head>
+
+    <body>
+        <h1>Tic Tac Toe</h1>
+    </body>
+
+    <script>
+console.log('Creating socket');
+var socket = new WebSocket('ws://localhost:8080/connect');
+socket.onopen = function() {
+    socket.send('ohai!');
+};
+socket.onmessage = function(ev) {
+    console.log('Received data: ' + ev.data);
+};
+    </script>
+</html>
