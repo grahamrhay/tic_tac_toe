@@ -1,20 +1,72 @@
 <html>
     <head>
         <title>Tic Tac Toe</title>
+        <style>
+.control-panel {
+    padding: 25px;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table, td {
+    border: 1px solid black;
+}
+
+td {
+    height: 50px;
+    width: 50px;
+}
+        </style>
     </head>
 
     <body>
         <h1>Tic Tac Toe</h1>
+        <div class="control-panel">
+            <button id="new-game" disabled="true">New Game!</button>
+        </div>
+        <div class="board">
+            <table>
+                <tr>
+                    <td id="cell1" />
+                    <td id="cell2" />
+                    <td id="cell3" />
+                </tr>
+                <tr>
+                    <td id="cell4" />
+                    <td id="cell5" />
+                    <td id="cell6" />
+                </tr>
+                <tr>
+                    <td id="cell7" />
+                    <td id="cell8" />
+                    <td id="cell9" />
+                </tr>
+            </table>
+        </div>
     </body>
 
     <script>
-console.log('Creating socket');
+var newGameBtn = document.getElementById('new-game');
 var socket = new WebSocket('ws://localhost:8080/connect');
 socket.onopen = function() {
-    socket.send('ohai!');
+    newGameBtn.disabled = false;
 };
 socket.onmessage = function(ev) {
     console.log('Received data: ' + ev.data);
+    if (ev.data.type === 'new_game') {
+        clearBoard();
+    }
 };
+newGameBtn.onclick = function() {
+    socket.send('new_game');
+};
+
+function clearBoard() {
+    for (var i = 1; i < 10; i++) {
+        document.getElementById('cell' + i).innerHTML = '';
+    }
+}
     </script>
 </html>

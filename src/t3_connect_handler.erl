@@ -7,11 +7,16 @@
 init(Req, Opts) ->
      {cowboy_websocket, Req, Opts}.
 
-websocket_handle(Frame = {text, _}, Req, State) ->
-    {reply, Frame, Req, State};
+websocket_handle({text, <<"new_game">>}, Req, State) ->
+    Resp = start_new_game(),
+    {reply, {text, Resp}, Req, State};
 
 websocket_handle(_Frame, Req, State) ->
     {ok, Req, State}.
 
 websocket_info(_Info, Req, State) ->
     {ok, Req, State}.
+
+start_new_game() ->
+    GameId = 1,
+    jiffy:encode(#{type => <<"new_game">>, gameId => GameId}).
