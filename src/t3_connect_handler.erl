@@ -15,7 +15,8 @@ websocket_handle({text, <<"new_game">>}, Req, State) ->
     Resp = start_new_game(),
     {reply, {text, Resp}, Req, State};
 
-websocket_handle(_Frame, Req, State) ->
+websocket_handle(Frame, Req, State) ->
+    io:format("Unexpected frame: ~p~n", [Frame]),
     {ok, Req, State}.
 
 websocket_info(_Info, Req, State) ->
