@@ -23,7 +23,7 @@ websocket_info(_Info, Req, State) ->
     {ok, Req, State}.
 
 start_new_session() ->
-    SessionId = uuid:get_v4(),
+    {ok, SessionId} = gen_server:call(t3_session_manager, new_session),
     jiffy:encode(#{type => <<"new_session">>, id => uuid:uuid_to_string(SessionId, binary_standard)}).
 
 start_new_game(_SessionId) ->
