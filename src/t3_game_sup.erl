@@ -8,5 +8,5 @@ start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-    Procs = [{t3_game, {t3_game, start_link, []}, transient, 5000, worker, [t3_game]}],
+    Procs = [{t3_game_fsm, {t3_game_fsm, start_link, []}, transient, 5000, worker, [t3_game_fsm]}],
     {ok, {{simple_one_for_one, 5, 10}, Procs}}.
