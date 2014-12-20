@@ -48,14 +48,19 @@ td {
     </body>
 
     <script>
+var sessionId;
 var newGameBtn = document.getElementById('new-game');
 var socket = new WebSocket('ws://localhost:8080/connect');
 socket.onopen = function() {
-    newGameBtn.disabled = false;
+    socket.send('new_session');
 };
 socket.onmessage = function(ev) {
     console.log('Received data: ' + ev.data);
-    if (ev.data.type === 'new_game') {
+    var msg = JSON.parse(ev.data);
+    if (msg.type === 'new_session') {
+        sessionId = msg.id;
+        newGameBtn.disabled = false;
+    } else if (msg.type === 'new_game') {
         clearBoard();
     }
 };

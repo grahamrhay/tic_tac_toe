@@ -8,7 +8,8 @@
 		kernel,
 		stdlib,
 		cowboy,
-		jiffy
+		jiffy,
+		uuid
 	]},
 	{mod, {tic_tac_toe_app, []}},
 	{env, []}
