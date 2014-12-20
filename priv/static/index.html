@@ -6,6 +6,10 @@
     padding: 25px;
 }
 
+#status {
+    padding: 25px;
+}
+
 table {
     border-collapse: collapse;
 }
@@ -26,6 +30,7 @@ td {
         <div class="control-panel">
             <button id="new-game" disabled="true">New Game!</button>
         </div>
+        <div id="status"></div>
         <div class="board">
             <table>
                 <tr>
@@ -48,7 +53,8 @@ td {
     </body>
 
     <script>
-var sessionId;
+var sessionId, gameId;
+
 var newGameBtn = document.getElementById('new-game');
 
 var socket = new WebSocket('ws://localhost:8080/connect');
@@ -64,6 +70,8 @@ socket.onmessage = function(ev) {
         sessionId = msg.id;
         newGameBtn.disabled = false;
     } else if (msg.type === 'new_game') {
+        gameId = msg.id;
+        updateStatus('New game!');
         clearBoard();
     }
 };
@@ -71,12 +79,18 @@ socket.onmessage = function(ev) {
 newGameBtn.onclick = function() {
     var msg = JSON.stringify({type: 'new_game', sessionId: sessionId});
     socket.send(msg);
+    newGameBtn.disabled = true;
+    updateStatus('Waiting to join game...');
 };
 
 function clearBoard() {
     for (var i = 1; i < 10; i++) {
         document.getElementById('cell' + i).innerHTML = '';
     }
+}
+
+function updateStatus(status) {
+    document.getElementById('status').innerHTML = status;
 }
     </script>
 </html>

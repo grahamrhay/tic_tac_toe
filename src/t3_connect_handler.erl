@@ -26,6 +26,6 @@ start_new_session() ->
     {ok, SessionId} = gen_server:call(t3_session_manager, new_session),
     jiffy:encode(#{type => <<"new_session">>, id => uuid:uuid_to_string(SessionId, binary_standard)}).
 
-start_new_game(_SessionId) ->
-    GameId = 1,
+start_new_game(SessionId) ->
+    {ok, GameId} = gen_server:call(t3_match_maker, {find_game, SessionId}, 30000),
     jiffy:encode(#{type => <<"new_game">>, id => GameId}).
