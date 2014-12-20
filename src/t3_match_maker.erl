@@ -51,5 +51,6 @@ find_game(SessionId, From, #state{waiting=[]}) ->
 
 find_game(_P2Sid, _P2From, #state{waiting=[{_P1Sid, P1From}|Rest]}) ->
     GameId = 1,
+    supervisor:start_child(t3_game_sup, []),
     gen_server:reply(P1From, {ok, GameId}),
     {ok, GameId, #state{waiting=Rest}}.
