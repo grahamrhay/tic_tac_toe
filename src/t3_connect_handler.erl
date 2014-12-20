@@ -9,23 +9,28 @@ init(Req, Opts) ->
 
 websocket_handle({text, <<"new_session">>}, Req, State) ->
     Resp = start_new_session(),
-    {reply, {text, Resp}, Req, State};
+    {reply, make_frame(Resp), Req, State};
 
 websocket_handle({text, <<"{\"type\":\"new_game\",\"sessionId\":\"", SessionId:36/binary, "\"}">>}, Req, State) ->
     Resp = start_new_game(SessionId),
-    {reply, {text, Resp}, Req, State};
+    {reply, make_frame(Resp), Req, State};
 
 websocket_handle(Frame, Req, State) ->
     io:format("Unexpected frame: ~p~n", [Frame]),
     {ok, Req, State}.
 
-websocket_info(_Info, Req, State) ->
-    {ok, Req, State}.
+websocket_info(Info, Req, State) ->
+    Msg = #{type => Info},
+    {reply, make_frame(Msg), Req, State}.
 
 start_new_session() ->
     {ok, SessionId} = gen_server:call(t3_session_manager, new_session),
-    jiffy:encode(#{type => <<"new_session">>, id => uuid:uuid_to_string(SessionId, binary_standard)}).
+    #{type => <<"new_session">>, id => uuid:uuid_to_string(SessionId, binary_standard)}.
 
-start_new_game(SessionId) ->
-    {ok, GameId} = gen_server:call(t3_match_maker, {find_game, SessionId}, 30000),
-    jiffy:encode(#{type => <<"new_game">>, id => GameId}).
+start_new_game(_SessionId) ->
+    {ok, GameId} = gen_server:call(t3_match_maker, {find_game}, 30000),
+    #{type => <<"new_game">>, id => GameId}.
+
+make_frame(Msg) ->
+    Json = jiffy:encode(Msg),
+    {text, Json}.

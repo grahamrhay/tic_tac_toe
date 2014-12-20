@@ -21,7 +21,11 @@ start_link(Args) ->
 
 %% gen_fsm.
 
-init([_Args]) ->
+init(Args) ->
+    io:format("New game started: ~p~n", [Args]),
+    [{P1, P2}] = Args,
+    P1 ! your_turn,
+    P2 ! wait,
     {ok, p1_turn, #state{}}.
 
 handle_event(_Event, StateName, State) ->

@@ -60,7 +60,7 @@ var newGameBtn = document.getElementById('new-game');
 var socket = new WebSocket('ws://localhost:8080/connect');
 
 socket.onopen = function() {
-    socket.send('new_session');
+    send('new_session');
 };
 
 socket.onmessage = function(ev) {
@@ -73,12 +73,17 @@ socket.onmessage = function(ev) {
         gameId = msg.id;
         updateStatus('New game!');
         clearBoard();
+    } else if (msg.type === 'your_turn') {
+        updateStatus('Your turn!');
+        enableBoard();
+    } else if (msg.type === 'wait') {
+        updateStatus('Waiting for other player...');
     }
 };
 
 newGameBtn.onclick = function() {
     var msg = JSON.stringify({type: 'new_game', sessionId: sessionId});
-    socket.send(msg);
+    send(msg);
     newGameBtn.disabled = true;
     updateStatus('Waiting to join game...');
 };
@@ -91,6 +96,29 @@ function clearBoard() {
 
 function updateStatus(status) {
     document.getElementById('status').innerHTML = status;
+}
+
+function send(msg) {
+    console.log('Sent msg: ' + msg);
+    socket.send(msg);
+}
+
+function enableBoard() {
+    for (var i = 1; i < 10; i++) {
+        document.getElementById('cell' + i).onclick = (function(id) {
+            return function() {
+                var msg = JSON.stringify({type: 'play', id: id})
+                send(msg)
+                disableBoard()
+            }
+        })(i)
+    }
+}
+
+function disableBoard() {
+    for (var i = 1; i < 10; i++) {
+        document.getElementById('cell' + i).onclick = null
+    }
 }
     </script>
 </html>

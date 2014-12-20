@@ -25,8 +25,8 @@ start_link() ->
 init([]) ->
     {ok, #state{}}.
 
-handle_call({find_game, SessionId}, From, State) ->
-    case find_game(SessionId, From, State) of
+handle_call({find_game}, From, State) ->
+    case find_game(From, State) of
         {ok, GameId, NewState} -> {reply, {ok, GameId}, NewState};
         {wait, NewState} -> {noreply, NewState}
     end;
@@ -46,11 +46,12 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
-find_game(SessionId, From, #state{waiting=[]}) ->
-    {wait, #state{waiting=[{SessionId, From}]}};
+find_game(From, #state{waiting=[]}) ->
+    {wait, #state{waiting=[From]}};
 
-find_game(_P2Sid, _P2From, #state{waiting=[{_P1Sid, P1From}|Rest]}) ->
+find_game({P2,_}, #state{waiting=[From|Rest]}) ->
     GameId = 1,
-    supervisor:start_child(t3_game_sup, []),
-    gen_server:reply(P1From, {ok, GameId}),
+    {P1,_} = From,
+    {ok, _Pid} = supervisor:start_child(t3_game_sup, [{P1, P2}]),
+    gen_server:reply(From, {ok, GameId}),
     {ok, GameId, #state{waiting=Rest}}.

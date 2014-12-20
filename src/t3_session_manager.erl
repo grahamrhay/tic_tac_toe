@@ -28,6 +28,7 @@ init([]) ->
 
 handle_call(new_session, _From, State) ->
     SessionId = uuid:get_v4(),
+    io:format("New session: ~p~n", [SessionId]),
     {reply, {ok, SessionId}, State};
 
 handle_call(_Request, _From, State) ->
