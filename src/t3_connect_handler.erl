@@ -11,8 +11,8 @@ websocket_handle({text, <<"new_session">>}, Req, State) ->
     Resp = start_new_session(),
     {reply, {text, Resp}, Req, State};
 
-websocket_handle({text, <<"new_game">>}, Req, State) ->
-    Resp = start_new_game(),
+websocket_handle({text, <<"{\"type\":\"new_game\",\"sessionId\":\"", SessionId:36/binary, "\"}">>}, Req, State) ->
+    Resp = start_new_game(SessionId),
     {reply, {text, Resp}, Req, State};
 
 websocket_handle(Frame, Req, State) ->
@@ -26,6 +26,6 @@ start_new_session() ->
     SessionId = uuid:get_v4(),
     jiffy:encode(#{type => <<"new_session">>, id => uuid:uuid_to_string(SessionId, binary_standard)}).
 
-start_new_game() ->
+start_new_game(_SessionId) ->
     GameId = 1,
     jiffy:encode(#{type => <<"new_game">>, id => GameId}).

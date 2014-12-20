@@ -50,10 +50,13 @@ td {
     <script>
 var sessionId;
 var newGameBtn = document.getElementById('new-game');
+
 var socket = new WebSocket('ws://localhost:8080/connect');
+
 socket.onopen = function() {
     socket.send('new_session');
 };
+
 socket.onmessage = function(ev) {
     console.log('Received data: ' + ev.data);
     var msg = JSON.parse(ev.data);
@@ -64,8 +67,10 @@ socket.onmessage = function(ev) {
         clearBoard();
     }
 };
+
 newGameBtn.onclick = function() {
-    socket.send('new_game');
+    var msg = JSON.stringify({type: 'new_game', sessionId: sessionId});
+    socket.send(msg);
 };
 
 function clearBoard() {
