@@ -18,3 +18,7 @@ td {
     height: 50px;
     width: 50px;
 }
+
+td.active {
+    cursor: pointer;
+}

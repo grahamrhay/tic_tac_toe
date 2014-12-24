@@ -52,19 +52,23 @@ function send(msg) {
 
 function enableBoard() {
     for (var i = 1; i < 10; i++) {
-        document.getElementById('cell' + i).onclick = (function(id) {
+        var cell = document.getElementById('cell' + i);
+        cell.onclick = (function(id) {
             return function() {
                 var msg = JSON.stringify({type: 'play', id: id})
                 send(msg)
                 disableBoard()
             }
-        })(i)
+        })(i);
+        cell.classList.add('active');
     }
 }
 
 function disableBoard() {
     for (var i = 1; i < 10; i++) {
-        document.getElementById('cell' + i).onclick = null
+        var cell = document.getElementById('cell' + i);
+        cell.onclick = null;
+        cell.classList.remove('active');
     }
 }
 
