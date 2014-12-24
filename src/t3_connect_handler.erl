@@ -19,9 +19,13 @@ websocket_handle(Frame, Req, State) ->
     io:format("Unexpected frame: ~p~n", [Frame]),
     {ok, Req, State}.
 
+websocket_info({Type, Data}, Req, State) ->
+    Msg = #{type => Type, data => Data},
+    {reply, make_frame(Msg), Req, State};
+
 websocket_info(Info, Req, State) ->
-    Msg = #{type => Info},
-    {reply, make_frame(Msg), Req, State}.
+    io:format("Unexpected msg: ~p~n", [Info]),
+    {ok, Req, State}.
 
 start_new_session() ->
     {ok, SessionId} = gen_server:call(t3_session_manager, new_session),

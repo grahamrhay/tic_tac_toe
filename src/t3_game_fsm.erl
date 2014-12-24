@@ -12,7 +12,11 @@
 -export([terminate/3]).
 -export([code_change/4]).
 
--record(state, {}).
+-record(state, {board=[
+    ['_','_','_'],
+    ['_','_','_'],
+    ['_','_','_']
+]}).
 
 %% API.
 
@@ -24,9 +28,10 @@ start_link(Args) ->
 init(Args) ->
     io:format("New game started: ~p~n", [Args]),
     [{P1, P2}] = Args,
-    P1 ! your_turn,
-    P2 ! wait,
-    {ok, p1_turn, #state{}}.
+    State = #state{},
+    P1 ! {your_turn, State#state.board},
+    P2 ! {wait, State#state.board},
+    {ok, p1_turn, State}.
 
 handle_event(_Event, StateName, State) ->
     {next_state, StateName, State}.
