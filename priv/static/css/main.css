@@ -1,0 +1,20 @@
+.control-panel {
+    padding: 25px;
+}
+
+#status {
+    padding: 25px;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table, td {
+    border: 1px solid black;
+}
+
+td {
+    height: 50px;
+    width: 50px;
+}
