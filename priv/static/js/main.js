@@ -20,8 +20,10 @@ socket.onmessage = function(ev) {
         clearBoard();
     } else if (msg.type === 'your_turn') {
         updateStatus('Your turn!');
+        updateBoard(msg.data);
         enableBoard();
     } else if (msg.type === 'wait') {
+        updateBoard(msg.data);
         updateStatus('Waiting for other player...');
     }
 };
@@ -63,5 +65,15 @@ function enableBoard() {
 function disableBoard() {
     for (var i = 1; i < 10; i++) {
         document.getElementById('cell' + i).onclick = null
+    }
+}
+
+function updateBoard(data) {
+    for (var i = 0; i < 9; i++) {
+        var symbol = data[Math.floor(i / 3)][i % 3];
+        if (symbol === '_') {
+            symbol = '';
+        }
+        document.getElementById('cell' + (i + 1)).innerHTML = symbol;
     }
 }
