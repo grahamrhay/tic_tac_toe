@@ -27,7 +27,7 @@ init([]) ->
     {ok, #state{}}.
 
 handle_call(new_session, _From, State) ->
-    SessionId = uuid:get_v4(),
+    SessionId = uuid:uuid_to_string(uuid:get_v4(), binary_standard),
     io:format("New session: ~p~n", [SessionId]),
     {reply, {ok, SessionId}, State};
 

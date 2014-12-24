@@ -50,8 +50,8 @@ find_game(From, #state{waiting=[]}) ->
     {wait, #state{waiting=[From]}};
 
 find_game({P2,_}, #state{waiting=[From|Rest]}) ->
-    GameId = 1,
+    GameId = uuid:uuid_to_string(uuid:get_v4(), binary_standard),
     {P1,_} = From,
-    {ok, _Pid} = supervisor:start_child(t3_game_sup, [{P1, P2}]),
+    {ok, _Pid} = supervisor:start_child(t3_game_sup, [{P1, P2, GameId}]),
     gen_server:reply(From, {ok, GameId}),
     {ok, GameId, #state{waiting=Rest}}.

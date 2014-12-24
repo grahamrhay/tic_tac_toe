@@ -15,6 +15,12 @@ websocket_handle({text, <<"{\"type\":\"new_game\",\"sessionId\":\"", SessionId:3
     Resp = start_new_game(SessionId),
     {reply, make_frame(Resp), Req, State};
 
+websocket_handle({text, Json}, Req, State) ->
+    Msg = jiffy:decode(Json, [return_maps]),
+    Type = maps:get(<<"type">>, Msg),
+    Resp = handle_message(Type, Msg),
+    {reply, make_frame(Resp), Req, State};
+
 websocket_handle(Frame, Req, State) ->
     io:format("Unexpected frame: ~p~n", [Frame]),
     {ok, Req, State}.
@@ -29,7 +35,7 @@ websocket_info(Info, Req, State) ->
 
 start_new_session() ->
     {ok, SessionId} = gen_server:call(t3_session_manager, new_session),
-    #{type => <<"new_session">>, id => uuid:uuid_to_string(SessionId, binary_standard)}.
+    #{type => <<"new_session">>, id => SessionId}.
 
 start_new_game(_SessionId) ->
     {ok, GameId} = gen_server:call(t3_match_maker, {find_game}, 30000),
@@ -38,3 +44,10 @@ start_new_game(_SessionId) ->
 make_frame(Msg) ->
     Json = jiffy:encode(Msg),
     {text, Json}.
+
+handle_message(<<"play">>, Msg) ->
+    GameId = maps:get(<<"gameId">>, Msg),
+    Cell = maps:get(<<"cell">>, Msg),
+    GamePid = gproc:lookup_pid({n, l, GameId}),
+    ok = gen_fsm:sync_send_event(GamePid, {play, self(), Cell}),
+    #{}.

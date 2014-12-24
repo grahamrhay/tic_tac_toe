@@ -11,12 +11,13 @@
 -export([handle_info/3]).
 -export([terminate/3]).
 -export([code_change/4]).
+-export([p1_turn/3]).
 
--record(state, {board=[
-    ['_','_','_'],
-    ['_','_','_'],
-    ['_','_','_']
-]}).
+-record(state, {p1, p2, board=#{
+    <<"1,1">> => '_', <<"1,2">> => '_', <<"1,3">> => '_',
+    <<"2,1">> => '_', <<"2,2">> => '_', <<"2,3">> => '_',
+    <<"3,1">> => '_', <<"3,2">> => '_', <<"3,3">> => '_'
+}}).
 
 %% API.
 
@@ -27,8 +28,9 @@ start_link(Args) ->
 
 init(Args) ->
     io:format("New game started: ~p~n", [Args]),
-    [{P1, P2}] = Args,
-    State = #state{},
+    [{P1, P2, GameId}] = Args,
+    true = gproc:reg({n, l, GameId}),
+    State = #state{p1 = P1, p2 = P2},
     P1 ! {your_turn, State#state.board},
     P2 ! {wait, State#state.board},
     {ok, p1_turn, State}.
@@ -47,3 +49,9 @@ terminate(_Reason, _StateName, _State) ->
 
 code_change(_OldVsn, StateName, State, _Extra) ->
     {ok, StateName, State}.
+
+p1_turn({play, P1, Cell}, _From, State) ->
+    NewState = State#state{board = maps:update(Cell, 'O', State#state.board)},
+    NewState#state.p2 ! {your_turn, NewState#state.board},
+    P1 ! {wait, NewState#state.board},
+    {reply, ok, p2_turn, NewState}.

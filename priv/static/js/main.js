@@ -53,13 +53,15 @@ function send(msg) {
 function enableBoard() {
     for (var i = 1; i < 10; i++) {
         var cell = document.getElementById('cell' + i);
-        cell.onclick = (function(id) {
+        cell.onclick = (function(c) {
             return function() {
-                var msg = JSON.stringify({type: 'play', id: id})
-                send(msg)
-                disableBoard()
-            }
-        })(i);
+                var row = c.dataset.row;
+                var cell = c.dataset.cell;
+                var msg = JSON.stringify({type: 'play', gameId: gameId, cell: row + ',' + cell});
+                send(msg);
+                disableBoard();
+            };
+        })(cell);
         cell.classList.add('active');
     }
 }
@@ -74,7 +76,9 @@ function disableBoard() {
 
 function updateBoard(data) {
     for (var i = 0; i < 9; i++) {
-        var symbol = data[Math.floor(i / 3)][i % 3];
+        var row = Math.floor(i / 3) + 1;
+        var cell = (i % 3) + 1;
+        var symbol = data[row + ',' + cell];
         if (symbol === '_') {
             symbol = '';
         }
