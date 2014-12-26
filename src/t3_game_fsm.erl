@@ -12,6 +12,7 @@
 -export([terminate/3]).
 -export([code_change/4]).
 -export([p1_turn/3]).
+-export([p2_turn/3]).
 
 -record(state, {p1, p2, board=#{
     <<"1,1">> => '_', <<"1,2">> => '_', <<"1,3">> => '_',
@@ -50,8 +51,16 @@ terminate(_Reason, _StateName, _State) ->
 code_change(_OldVsn, StateName, State, _Extra) ->
     {ok, StateName, State}.
 
-p1_turn({play, P1, Cell}, _From, State) ->
+p1_turn({play, P1, Cell}, _From, State = #state{p1 = P1}) ->
+    '_' = maps:get(Cell, State#state.board),
     NewState = State#state{board = maps:update(Cell, 'O', State#state.board)},
     NewState#state.p2 ! {your_turn, NewState#state.board},
     P1 ! {wait, NewState#state.board},
     {reply, ok, p2_turn, NewState}.
+
+p2_turn({play, P2, Cell}, _From, State = #state{p2 = P2}) ->
+    '_' = maps:get(Cell, State#state.board),
+    NewState = State#state{board = maps:update(Cell, 'X', State#state.board)},
+    NewState#state.p1 ! {your_turn, NewState#state.board},
+    P2 ! {wait, NewState#state.board},
+    {reply, ok, p1_turn, NewState}.
