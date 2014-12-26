@@ -17,7 +17,6 @@ socket.onmessage = function(ev) {
     } else if (msg.type === 'new_game') {
         gameId = msg.id;
         updateStatus('New game!');
-        clearBoard();
     } else if (msg.type === 'your_turn') {
         updateStatus('Your turn!');
         updateBoard(msg.data);
@@ -25,6 +24,14 @@ socket.onmessage = function(ev) {
     } else if (msg.type === 'wait') {
         updateBoard(msg.data);
         updateStatus('Waiting for other player...');
+    } else if (msg.type === 'you_win') {
+        updateBoard(msg.data);
+        updateStatus('Game over, you won!');
+        newGameBtn.disabled = false;
+    } else if (msg.type === 'you_lose') {
+        updateBoard(msg.data);
+        updateStatus('Game over, you lost!');
+        newGameBtn.disabled = false;
     }
 };
 
@@ -32,6 +39,7 @@ newGameBtn.onclick = function() {
     var msg = JSON.stringify({type: 'new_game', sessionId: sessionId});
     send(msg);
     newGameBtn.disabled = true;
+    clearBoard();
     updateStatus('Waiting to join game...');
 };
 

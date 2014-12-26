@@ -11,8 +11,8 @@
 -export([handle_info/3]).
 -export([terminate/3]).
 -export([code_change/4]).
--export([p1_turn/3]).
--export([p2_turn/3]).
+-export([p1_turn/2]).
+-export([p2_turn/2]).
 
 -record(state, {p1, p2, board=#{
     <<"1,1">> => '_', <<"1,2">> => '_', <<"1,3">> => '_',
@@ -51,15 +51,27 @@ terminate(_Reason, _StateName, _State) ->
 code_change(_OldVsn, StateName, State, _Extra) ->
     {ok, StateName, State}.
 
-p1_turn({play, P1, Cell}, _From, State = #state{p1 = P1}) ->
+p1_turn({play, P1, Cell}, State = #state{p1 = P1}) ->
     NewState = play(Cell, State, 'O'),
-    notify_players(NewState#state.p2, NewState#state.p1, NewState#state.board),
-    {reply, ok, p2_turn, NewState}.
+    case t3_game:has_won(NewState#state.board, 'O') of
+        true ->
+            game_over(NewState#state.p1, NewState#state.p2, NewState#state.board),
+            {stop, normal, NewState};
+        false ->
+            notify_players(NewState#state.p2, NewState#state.p1, NewState#state.board),
+            {next_state, p2_turn, NewState}
+    end.
 
-p2_turn({play, P2, Cell}, _From, State = #state{p2 = P2}) ->
+p2_turn({play, P2, Cell}, State = #state{p2 = P2}) ->
     NewState = play(Cell, State, 'X'),
-    notify_players(NewState#state.p1, NewState#state.p2, NewState#state.board),
-    {reply, ok, p1_turn, NewState}.
+    case t3_game:has_won(NewState#state.board, 'X') of
+        true ->
+            game_over(NewState#state.p2, NewState#state.p1, NewState#state.board),
+            {stop, normal, NewState};
+        false ->
+            notify_players(NewState#state.p1, NewState#state.p2, NewState#state.board),
+            {next_state, p1_turn, NewState}
+    end.
 
 play(Cell, State, Symbol) ->
     '_' = maps:get(Cell, State#state.board),
@@ -68,3 +80,7 @@ play(Cell, State, Symbol) ->
 notify_players(Play, Wait, Board) ->
     Play ! {your_turn, Board},
     Wait ! {wait, Board}.
+
+game_over(Win, Lose, Board) ->
+    Win ! {you_win, Board},
+    Lose ! {you_lose, Board}.

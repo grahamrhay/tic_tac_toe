@@ -49,5 +49,5 @@ handle_message(<<"play">>, Msg) ->
     GameId = maps:get(<<"gameId">>, Msg),
     Cell = maps:get(<<"cell">>, Msg),
     GamePid = gproc:lookup_pid({n, l, GameId}),
-    ok = gen_fsm:sync_send_event(GamePid, {play, self(), Cell}),
+    ok = gen_fsm:send_event(GamePid, {play, self(), Cell}),
     #{}.

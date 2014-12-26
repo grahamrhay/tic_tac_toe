@@ -4,3 +4,4 @@ _rel/
 *.swp
 deps/
 .erlang.mk.packages.v2
+test/*.beam
