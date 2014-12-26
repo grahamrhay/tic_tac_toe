@@ -53,16 +53,18 @@ code_change(_OldVsn, StateName, State, _Extra) ->
 
 p1_turn({play, P1, Cell}, _From, State = #state{p1 = P1}) ->
     NewState = play(Cell, State, 'O'),
-    NewState#state.p2 ! {your_turn, NewState#state.board},
-    P1 ! {wait, NewState#state.board},
+    notify_players(NewState#state.p2, NewState#state.p1, NewState#state.board),
     {reply, ok, p2_turn, NewState}.
 
 p2_turn({play, P2, Cell}, _From, State = #state{p2 = P2}) ->
     NewState = play(Cell, State, 'X'),
-    NewState#state.p1 ! {your_turn, NewState#state.board},
-    P2 ! {wait, NewState#state.board},
+    notify_players(NewState#state.p1, NewState#state.p2, NewState#state.board),
     {reply, ok, p1_turn, NewState}.
 
 play(Cell, State, Symbol) ->
     '_' = maps:get(Cell, State#state.board),
     State#state{board = maps:update(Cell, Symbol, State#state.board)}.
+
+notify_players(Play, Wait, Board) ->
+    Play ! {your_turn, Board},
+    Wait ! {wait, Board}.
