@@ -53,6 +53,11 @@ function send(msg) {
 function enableBoard() {
     for (var i = 1; i < 10; i++) {
         var cell = document.getElementById('cell' + i);
+
+        if (cell.innerHTML !== '') {
+            continue;
+        }
+
         cell.onclick = (function(c) {
             return function() {
                 var row = c.dataset.row;
