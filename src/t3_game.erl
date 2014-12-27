@@ -1,6 +1,7 @@
 -module(t3_game).
 
 -export([has_won/2]).
+-export([is_draw/1]).
 
 %% top row
 has_won(#{
@@ -68,3 +69,6 @@ has_won(#{
 
 %% no winner
 has_won(_Board, _) -> false.
+
+is_draw(Board) ->
+    lists:all(fun(V) -> V =/= '_' end, maps:values(Board)).
