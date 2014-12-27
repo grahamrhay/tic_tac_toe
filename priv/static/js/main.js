@@ -25,13 +25,11 @@ socket.onmessage = function(ev) {
         updateBoard(msg.data);
         updateStatus('Waiting for other player...');
     } else if (msg.type === 'you_win') {
-        updateBoard(msg.data);
-        updateStatus('Game over, you won!');
-        newGameBtn.disabled = false;
+        gameOver(msg.data, 'you won');
     } else if (msg.type === 'you_lose') {
-        updateBoard(msg.data);
-        updateStatus('Game over, you lost!');
-        newGameBtn.disabled = false;
+        gameOver(msg.data, 'you lost');
+    } else if (msg.type === 'draw') {
+        gameOver(msg.data, 'draw');
     }
 };
 
@@ -97,4 +95,10 @@ function updateBoard(data) {
         }
         document.getElementById('cell' + (i + 1)).innerHTML = symbol;
     }
+}
+
+function gameOver(board, msg) {
+    updateBoard(board);
+    updateStatus('Game over, ' + msg + '!');
+    newGameBtn.disabled = false;
 }

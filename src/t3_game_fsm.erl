@@ -55,22 +55,34 @@ p1_turn({play, P1, Cell}, State = #state{p1 = P1}) ->
     NewState = play(Cell, State, 'O'),
     case t3_game:has_won(NewState#state.board, 'O') of
         true ->
-            game_over(NewState#state.p1, NewState#state.p2, NewState#state.board),
+            game_won(NewState#state.p1, NewState#state.p2, NewState#state.board),
             {stop, normal, NewState};
         false ->
-            notify_players(NewState#state.p2, NewState#state.p1, NewState#state.board),
-            {next_state, p2_turn, NewState}
+            case t3_game:is_draw(NewState#state.board) of
+                true ->
+                    game_drawn(NewState#state.p1, NewState#state.p2, NewState#state.board),
+                    {stop, normal, NewState};
+                false ->
+                    notify_players(NewState#state.p2, NewState#state.p1, NewState#state.board),
+                    {next_state, p2_turn, NewState}
+            end
     end.
 
 p2_turn({play, P2, Cell}, State = #state{p2 = P2}) ->
     NewState = play(Cell, State, 'X'),
     case t3_game:has_won(NewState#state.board, 'X') of
         true ->
-            game_over(NewState#state.p2, NewState#state.p1, NewState#state.board),
+            game_won(NewState#state.p2, NewState#state.p1, NewState#state.board),
             {stop, normal, NewState};
         false ->
-            notify_players(NewState#state.p1, NewState#state.p2, NewState#state.board),
-            {next_state, p1_turn, NewState}
+            case t3_game:is_draw(NewState#state.board) of
+                true ->
+                    game_drawn(NewState#state.p1, NewState#state.p2, NewState#state.board),
+                    {stop, normal, NewState};
+                false ->
+                    notify_players(NewState#state.p1, NewState#state.p2, NewState#state.board),
+                    {next_state, p1_turn, NewState}
+            end
     end.
 
 play(Cell, State, Symbol) ->
@@ -81,6 +93,10 @@ notify_players(Play, Wait, Board) ->
     Play ! {your_turn, Board},
     Wait ! {wait, Board}.
 
-game_over(Win, Lose, Board) ->
+game_won(Win, Lose, Board) ->
     Win ! {you_win, Board},
     Lose ! {you_lose, Board}.
+
+game_drawn(P1, P2, Board) ->
+    P1 ! {draw, Board},
+    P2 ! {draw, Board}.
