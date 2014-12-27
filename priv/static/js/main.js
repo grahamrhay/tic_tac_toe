@@ -33,6 +33,10 @@ socket.onmessage = function(ev) {
     }
 };
 
+socket.onclose = function(ev) {
+    console.log('Socket closed. Code: ' + ev.code + ', Reason: ' + ev.reason + ', Clean: ' + ev.wasClean);
+};
+
 newGameBtn.onclick = function() {
     var msg = JSON.stringify({type: 'new_game', sessionId: sessionId});
     send(msg);
