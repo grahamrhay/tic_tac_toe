@@ -30,6 +30,9 @@ socket.onmessage = function(ev) {
         gameOver(msg.data, 'you lost');
     } else if (msg.type === 'draw') {
         gameOver(msg.data, 'draw');
+    } else if (msg.type === 'no_game_available') {
+        updateStatus('No game available, try again later');
+        newGameBtn.disabled = false;
     }
 };
 

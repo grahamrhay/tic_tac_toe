@@ -38,8 +38,15 @@ start_new_session() ->
     #{type => <<"new_session">>, id => SessionId}.
 
 start_new_game(_SessionId) ->
-    {ok, GameId} = gen_server:call(t3_match_maker, {find_game}, 30000),
-    #{type => <<"new_game">>, id => GameId}.
+    Res = try
+         gen_server:call(t3_match_maker, {find_game}, 30000)
+    catch
+        exit:{timeout,_} -> timeout
+    end,
+    case Res of
+        {ok, GameId} -> #{type => <<"new_game">>, id => GameId};
+        timeout -> #{type => <<"no_game_available">>}
+    end.
 
 make_frame(Msg) ->
     Json = jiffy:encode(Msg),
