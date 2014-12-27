@@ -75,7 +75,7 @@ function enableBoard() {
             return function() {
                 var row = c.dataset.row;
                 var cell = c.dataset.cell;
-                var msg = JSON.stringify({type: 'play', gameId: gameId, cell: row + ',' + cell});
+                var msg = JSON.stringify({type: 'play', gameId: gameId, cell: row + ',' + cell, sessionId: sessionId});
                 send(msg);
                 disableBoard();
             };
