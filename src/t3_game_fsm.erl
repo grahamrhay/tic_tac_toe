@@ -14,7 +14,7 @@
 -export([p1_turn/2]).
 -export([p2_turn/2]).
 
--record(state, {p1, p2, board=#{
+-record(state, {game_id, state, p1, p2, board=#{
     <<"1,1">> => '_', <<"1,2">> => '_', <<"1,3">> => '_',
     <<"2,1">> => '_', <<"2,2">> => '_', <<"2,3">> => '_',
     <<"3,1">> => '_', <<"3,2">> => '_', <<"3,3">> => '_'
@@ -28,13 +28,13 @@ start_link(Args) ->
 %% gen_fsm.
 
 init(Args) ->
-    io:format("New game started: ~p~n", [Args]),
     [{P1, P2, GameId}] = Args,
+    process_flag(trap_exit, true),
     true = gproc:reg({n, l, GameId}),
-    State = #state{p1 = P1, p2 = P2},
-    P1 ! {your_turn, State#state.board},
-    P2 ! {wait, State#state.board},
-    {ok, p1_turn, State}.
+    {ok, t3_game_state} = dets:open_file(t3_game_state, []),
+    State = get_game_state(GameId, P1, P2),
+    notify_players(State),
+    {ok, State#state.state, State}.
 
 handle_event(_Event, StateName, State) ->
     {next_state, StateName, State}.
@@ -46,14 +46,14 @@ handle_info(_Info, StateName, State) ->
     {next_state, StateName, State}.
 
 terminate(_Reason, _StateName, _State) ->
-    ok.
+    dets:close(t3_game_state).
 
 code_change(_OldVsn, StateName, State, _Extra) ->
     {ok, StateName, State}.
 
 p1_turn({play, P1, Cell}, State = #state{p1 = P1}) ->
-    NewState = play(Cell, State, 'O'),
-    case t3_game:has_won(NewState#state.board, 'O') of
+    NewState = play(Cell, State, 'O', p2_turn),
+    Res = case t3_game:has_won(NewState#state.board, 'O') of
         true ->
             game_won(NewState#state.p1, NewState#state.p2, NewState#state.board),
             {stop, normal, NewState};
@@ -63,14 +63,16 @@ p1_turn({play, P1, Cell}, State = #state{p1 = P1}) ->
                     game_drawn(NewState#state.p1, NewState#state.p2, NewState#state.board),
                     {stop, normal, NewState};
                 false ->
-                    notify_players(NewState#state.p2, NewState#state.p1, NewState#state.board),
+                    notify_players(NewState),
                     {next_state, p2_turn, NewState}
             end
-    end.
+    end,
+    save_game_state(NewState),
+    Res.
 
 p2_turn({play, P2, Cell}, State = #state{p2 = P2}) ->
-    NewState = play(Cell, State, 'X'),
-    case t3_game:has_won(NewState#state.board, 'X') of
+    NewState = play(Cell, State, 'X', p1_turn),
+    Res = case t3_game:has_won(NewState#state.board, 'X') of
         true ->
             game_won(NewState#state.p2, NewState#state.p1, NewState#state.board),
             {stop, normal, NewState};
@@ -80,14 +82,22 @@ p2_turn({play, P2, Cell}, State = #state{p2 = P2}) ->
                     game_drawn(NewState#state.p1, NewState#state.p2, NewState#state.board),
                     {stop, normal, NewState};
                 false ->
-                    notify_players(NewState#state.p1, NewState#state.p2, NewState#state.board),
+                    notify_players(NewState),
                     {next_state, p1_turn, NewState}
             end
-    end.
+    end,
+    save_game_state(NewState),
+    Res.
 
-play(Cell, State, Symbol) ->
+play(Cell, State, Symbol, NextState) ->
     '_' = maps:get(Cell, State#state.board),
-    State#state{board = maps:update(Cell, Symbol, State#state.board)}.
+    State#state{board = maps:update(Cell, Symbol, State#state.board), state = NextState}.
+
+notify_players(State) ->
+    case State#state.state of
+        p1_turn -> notify_players(State#state.p1, State#state.p2, State#state.board);
+        p2_turn -> notify_players(State#state.p2, State#state.p1, State#state.board)
+    end.
 
 notify_players(Play, Wait, Board) ->
     Play ! {your_turn, Board},
@@ -100,3 +110,15 @@ game_won(Win, Lose, Board) ->
 game_drawn(P1, P2, Board) ->
     P1 ! {draw, Board},
     P2 ! {draw, Board}.
+
+get_game_state(GameId, P1, P2) ->
+    case dets:lookup(t3_game_state, GameId) of
+        [] ->
+            save_game_state(#state{game_id = GameId, state = p1_turn, p1 = P1, p2 = P2});
+        [{GameId, State}] ->
+            State
+    end.
+
+save_game_state(State = #state{game_id = GameId}) ->
+    ok = dets:insert(t3_game_state, {GameId, State}),
+    State.
