@@ -12,6 +12,7 @@ websocket_handle({text, <<"new_session">>}, Req, State) ->
     {reply, make_frame(Resp), Req, State};
 
 websocket_handle({text, Json}, Req, State) ->
+    lager:info("Received frame: ~p~n", [Json]),
     Msg = jiffy:decode(Json, [return_maps]),
     Resp = validate_session(Msg, fun() ->
         Type = maps:get(<<"type">>, Msg),
@@ -20,7 +21,7 @@ websocket_handle({text, Json}, Req, State) ->
     {reply, make_frame(Resp), Req, State};
 
 websocket_handle(Frame, Req, State) ->
-    io:format("Unexpected frame: ~p~n", [Frame]),
+    lager:error("Unexpected frame: ~p~n", [Frame]),
     {ok, Req, State}.
 
 websocket_info({Type, Data}, Req, State) ->
@@ -28,7 +29,7 @@ websocket_info({Type, Data}, Req, State) ->
     {reply, make_frame(Msg), Req, State};
 
 websocket_info(Info, Req, State) ->
-    io:format("Unexpected msg: ~p~n", [Info]),
+    lager:error("Unexpected msg: ~p~n", [Info]),
     {ok, Req, State}.
 
 start_new_session() ->

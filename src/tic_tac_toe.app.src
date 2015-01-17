@@ -10,7 +10,8 @@
 		cowboy,
 		jiffy,
 		uuid,
-		gproc
+		gproc,
+		lager
 	]},
 	{mod, {tic_tac_toe_app, []}},
 	{env, []}
