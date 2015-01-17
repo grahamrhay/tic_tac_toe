@@ -5,3 +5,4 @@ _rel/
 deps/
 .erlang.mk.packages.v2
 test/*.beam
+*.plt

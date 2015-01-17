@@ -101,15 +101,18 @@ notify_players(State) ->
 
 notify_players(Play, Wait, Board) ->
     Play ! {your_turn, Board},
-    Wait ! {wait, Board}.
+    Wait ! {wait, Board},
+    ok.
 
 game_won(Win, Lose, Board) ->
     Win ! {you_win, Board},
-    Lose ! {you_lose, Board}.
+    Lose ! {you_lose, Board},
+    ok.
 
 game_drawn(P1, P2, Board) ->
     P1 ! {draw, Board},
-    P2 ! {draw, Board}.
+    P2 ! {draw, Board},
+    ok.
 
 get_game_state(GameId, P1, P2) ->
     case dets:lookup(t3_game_state, GameId) of
@@ -120,5 +123,4 @@ get_game_state(GameId, P1, P2) ->
     end.
 
 save_game_state(State = #state{game_id = GameId}) ->
-    ok = dets:insert(t3_game_state, {GameId, State}),
-    State.
+    ok = dets:insert(t3_game_state, {GameId, State}).
