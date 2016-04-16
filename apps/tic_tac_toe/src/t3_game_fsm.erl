@@ -29,6 +29,7 @@ start_link(Args) ->
 
 init(Args) ->
     [{P1, P2, GameId}] = Args,
+    lager:info("Starting new game: ~p", [GameId]),
     process_flag(trap_exit, true),
     true = gproc:reg({n, l, GameId}),
     {ok, t3_game_state} = dets:open_file(t3_game_state, []),
@@ -123,4 +124,5 @@ get_game_state(GameId, P1, P2) ->
     end.
 
 save_game_state(State = #state{game_id = GameId}) ->
-    ok = dets:insert(t3_game_state, {GameId, State}).
+    ok = dets:insert(t3_game_state, {GameId, State}),
+    State.

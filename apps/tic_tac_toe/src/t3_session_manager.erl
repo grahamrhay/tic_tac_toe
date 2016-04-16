@@ -26,7 +26,7 @@ init([]) ->
     {ok, #state{}}.
 
 handle_call(new_session, _From, State) ->
-    SessionId = uuid:uuid_to_string(uuid:get_v4(), binary_standard),
+    SessionId = list_to_binary(uuid:to_string(uuid:uuid4())),
     NewState = update_session(SessionId, State),
     {reply, {ok, SessionId}, NewState};
 

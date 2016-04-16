@@ -12,7 +12,7 @@ start(_Type, _Args) ->
                {"/[...]", cowboy_static, {priv_dir, tic_tac_toe, "static/"}}
         ]}
     ]),
-    {ok, _} = cowboy:start_http(my_http_listener, 100, [{port, 8080}],
+    {ok, _} = cowboy:start_http(my_http_listener, 100, [{port, 8888}],
         [{env, [{dispatch, Dispatch}]}]
     ),
     tic_tac_toe_sup:start_link().
