@@ -9,7 +9,6 @@ start_link() ->
 
 init([]) ->
     Procs = [
-        {t3_session_manager, {t3_session_manager, start_link, []}, permanent, 5000, worker, [t3_session_manager]},
         {t3_match_maker, {t3_match_maker, start_link, []}, permanent, 5000, worker, [t3_match_maker]},
         {t3_game_sup, {t3_game_sup, start_link, []}, permanent, 5000, supervisor, [t3_game_sup]}
     ],

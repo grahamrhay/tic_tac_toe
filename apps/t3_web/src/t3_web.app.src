@@ -1,4 +1,4 @@
-{application, tic_tac_toe, [
+{application, t3_web, [
     {description, ""},
     {vsn, "0.1.0"},
     {id, "git"},
@@ -7,10 +7,12 @@
     {applications, [
         kernel,
         stdlib,
+        cowboy,
+        jsx,
         uuid,
         gproc,
         lager
     ]},
-    {mod, {tic_tac_toe_app, []}},
+    {mod, {t3_web_app, []}},
     {env, []}
 ]}.
