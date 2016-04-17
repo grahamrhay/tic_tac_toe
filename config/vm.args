@@ -2,5 +2,7 @@
 
 -setcookie tic_tac_toe_cookie
 
+-smp enable
+
 +K true
 +A30

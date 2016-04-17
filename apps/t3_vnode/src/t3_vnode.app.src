@@ -1,0 +1,15 @@
+%% -*- erlang -*-
+{application, t3_vnode, [
+    {description, ""},
+    {vsn, "1"},
+    {registered, []},
+    {applications, [
+        kernel,
+        stdlib,
+        sasl,
+        riak_core,
+        setup
+    ]},
+    {mod, { t3_vnode_app, []}},
+    {env, []}
+]}.
