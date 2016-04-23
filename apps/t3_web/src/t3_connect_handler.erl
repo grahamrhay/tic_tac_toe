@@ -78,6 +78,5 @@ handle_message(<<"play">>, Msg) ->
     play(GameId, Cell).
 
 play(GameId, Cell) ->
-    GamePid = gproc:lookup_pid({n, l, GameId}),
-    ok = gen_fsm:send_event(GamePid, {play, self(), Cell}),
+    ok = t3_vnode_commands:play(GameId, self(), Cell),
     #{}.

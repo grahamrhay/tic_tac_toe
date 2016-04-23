@@ -21,16 +21,20 @@
              start_vnode/1
              ]).
 
--record(state, {partition}).
-
 start_vnode(I) ->
     riak_core_vnode_master:get_vnode_pid(I, ?MODULE).
 
-init([Partition]) ->
-    {ok, #state { partition=Partition }}.
+init([_Partition]) ->
+    {ok, #{}}.
 
-handle_command(ping, _Sender, State) ->
-    {reply, {pong, State#state.partition}, State};
+handle_command({start, GameId, {P1, P2}}, _Sender, State) ->
+    {ok, _Pid} = supervisor:start_child(t3_game_sup, [{P1, P2, GameId}]),
+    {reply, ok, State};
+
+handle_command({play, GameId, Player, Cell}, _Sender, State) ->
+    GamePid = gproc:lookup_pid({n, l, GameId}),
+    ok = gen_fsm:send_event(GamePid, {play, Player, Cell}),
+    {reply, ok, State};
 
 handle_command(Message, _Sender, State) ->
     lager:warning("unhandled_command ~p", [Message]),
