@@ -13,7 +13,7 @@ websocket_handle({text, <<"new_session">>}, Req, State) ->
 
 websocket_handle({text, Json}, Req, State) ->
     lager:info("Received frame: ~p~n", [Json]),
-    Msg = jiffy:decode(Json, [return_maps]),
+    Msg = jsx:decode(Json, [return_maps]),
     Resp = validate_session(Msg, fun() ->
         Type = maps:get(<<"type">>, Msg),
         handle_message(Type, Msg)
@@ -55,7 +55,7 @@ start_new_game(_SessionId) ->
     end.
 
 make_frame(Msg) ->
-    Json = jiffy:encode(Msg),
+    Json = jsx:encode(Msg),
     {text, Json}.
 
 handle_message(<<"new_game">>, Msg) ->

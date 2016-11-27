@@ -8,7 +8,7 @@
 		kernel,
 		stdlib,
 		cowboy,
-		jiffy,
+		jsx,
 		uuid,
 		gproc,
 		lager
