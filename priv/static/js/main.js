@@ -2,7 +2,9 @@ var sessionId, gameId;
 
 var newGameBtn = document.getElementById('new-game');
 
-var socket = new WebSocket('ws://localhost:8080/connect');
+var protocol = location.protocol === "https:" ? "wss:" : "ws:";
+var uri = protocol + "//" + location.host + "/connect";
+var socket = new WebSocket(uri);
 
 socket.onopen = function() {
     send('new_session');
