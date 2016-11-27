@@ -1,11 +1,18 @@
 -module(t3_connect_handler).
 
--export([init/2]).
+-behaviour(cowboy_websocket_handler).
+
+-export([init/3]).
+-export([websocket_init/3]).
 -export([websocket_handle/3]).
 -export([websocket_info/3]).
+-export([websocket_terminate/3]).
 
-init(Req, Opts) ->
-     {cowboy_websocket, Req, Opts}.
+init({tcp, http}, _Req, _Opts) ->
+    {upgrade, protocol, cowboy_websocket}.
+
+websocket_init(_TransportName, Req, _Opts) ->
+    {ok, Req, #{}}.
 
 websocket_handle({text, <<"new_session">>}, Req, State) ->
     Resp = start_new_session(),
@@ -31,6 +38,9 @@ websocket_info({Type, Data}, Req, State) ->
 websocket_info(Info, Req, State) ->
     lager:error("Unexpected msg: ~p~n", [Info]),
     {ok, Req, State}.
+
+websocket_terminate(_Reason, _Req, _State) ->
+        ok.
 
 start_new_session() ->
     {ok, SessionId} = gen_server:call(t3_session_manager, new_session),
