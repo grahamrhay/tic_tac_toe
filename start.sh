@@ -1,1 +1,1 @@
-./_rel/tic_tac_toe_release/bin/tic_tac_toe_release console
+./_build/default/rel/tic_tac_toe/bin/tic_tac_toe console
