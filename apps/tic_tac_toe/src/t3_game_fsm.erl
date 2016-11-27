@@ -117,7 +117,9 @@ game_drawn(P1, P2, Board) ->
 get_game_state(GameId, P1, P2) ->
     case dets:lookup(t3_game_state, GameId) of
         [] ->
-            save_game_state(#state{game_id = GameId, state = p1_turn, p1 = P1, p2 = P2});
+            State = #state{game_id = GameId, state = p1_turn, p1 = P1, p2 = P2},
+            save_game_state(State),
+            State;
         [{GameId, State}] ->
             State
     end.
