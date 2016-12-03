@@ -2,10 +2,21 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List
+import Json.Decode exposing (..)
+import WebSocket
+
+wsServer : String
+wsServer =
+    "ws://localhost:8080/connect"
 
 main: Program Never Model Msg
 main =
-    Html.beginnerProgram { model = model, view = view, update = update }
+    Html.program {
+        init = init,
+        view = view,
+        update = update,
+        subscriptions = subscriptions
+    }
 
 -- MODEL
 
@@ -13,13 +24,17 @@ type Box = O | X | Empty
 type alias Row = List Box
 type alias Board = List Row
 type alias Model = {
+    sessionId: String,
     status: String,
     board: Board
 }
 
-model : Model
-model =
-    Model "" [
+init : (Model, Cmd Msg)
+init =
+    (Model "" "" emptyGrid, newSession)
+
+emptyGrid : Board
+emptyGrid = [
         [ Empty, Empty, Empty ],
         [ Empty, Empty, Empty ],
         [ Empty, Empty, Empty ]
@@ -27,13 +42,23 @@ model =
 
 -- UPDATE
 
-type Msg = NewGame
+type Msg =
+    NewGame |
+    NewMessage String
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         NewGame ->
-            model
+            (model, Cmd.none)
+        NewMessage str ->
+            ((handleMessage str model), Cmd.none)
+
+-- SUBSCRIPTIONS
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+      WebSocket.listen wsServer NewMessage
 
 -- VIEW
 
@@ -66,3 +91,26 @@ renderBox box =
         O -> "O"
         X -> "X"
         Empty -> ""
+
+newSession : Cmd msg
+newSession =
+    WebSocket.send wsServer "new_session"
+
+handleMessage : String -> Model -> Model
+handleMessage str model =
+    case decodeString (field "type" string) str of
+        Ok t -> handleMessageType t str model
+        Err _ -> model
+
+handleMessageType : String -> String -> Model -> Model
+handleMessageType t str model =
+    case t of
+        "new_session" -> handleNewSessionMsg str model
+        _ -> model
+
+handleNewSessionMsg : String -> Model -> Model
+handleNewSessionMsg str model =
+    case decodeString (field "id" string) str of
+        Ok sid ->
+            { model | sessionId = sid }
+        Err _ -> model
